@@ -1,0 +1,175 @@
+{
+  "entities": {
+    "Room": {
+      "title": "Room",
+      "description": "Information about a hostel room and its general status",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "blockName": { "type": "string" },
+        "floor": { "type": "integer" },
+        "roomNo": { "type": "string" },
+        "seatsTotal": { "type": "integer" },
+        "seatsBooked": { "type": "integer" },
+        "seatsReserved": { "type": "integer" },
+        "status": { "type": "string", "enum": ["Available", "Booked", "Reserved", "Maintenance"] },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "blockName", "floor", "roomNo", "seatsTotal", "seatsBooked", "status"]
+    },
+    "Seat": {
+      "title": "Seat",
+      "description": "Hostel seat inside a room and its status",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "roomId": { "type": "string" },
+        "roomNo": { "type": "string" },
+        "seatNo": { "type": "string" },
+        "status": { "type": "string", "enum": ["Available", "Booked", "Reserved", "Maintenance"] },
+        "rentPrice": { "type": "number" },
+        "memberId": { "type": "string" },
+        "currentMemberName": { "type": "string" }
+      },
+      "required": ["id", "roomId", "roomNo", "seatNo", "status", "rentPrice"]
+    },
+    "Member": {
+      "title": "Member",
+      "description": "Profile info for a hostel boarder",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "fullName": { "type": "string" },
+        "phone": { "type": "string" },
+        "nidOrStudentId": { "type": "string" },
+        "guardianName": { "type": "string" },
+        "guardianPhone": { "type": "string" },
+        "emergencyContact": { "type": "string" },
+        "roomId": { "type": "string" },
+        "roomNo": { "type": "string" },
+        "seatId": { "type": "string" },
+        "seatNo": { "type": "string" },
+        "packageName": { "type": "string", "enum": ["Basic", "Standard", "Premium", "VIP"] },
+        "joiningDate": { "type": "string" },
+        "leavingDate": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Inactive"] },
+        "dueAmount": { "type": "number" },
+        "totalPaid": { "type": "number" },
+        "photoUrl": { "type": "string" }
+      },
+      "required": ["id", "fullName", "phone", "nidOrStudentId", "roomId", "roomNo", "seatId", "seatNo", "packageName", "joiningDate", "status"]
+    },
+    "Package": {
+      "title": "Package",
+      "description": "Hostel subscription package with food dynamic",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "foodSystem": { "type": "string" },
+        "mealCount": { "type": "integer" },
+        "facilities": { "type": "array" }
+      },
+      "required": ["id", "name", "price", "foodSystem", "mealCount"]
+    },
+    "Payment": {
+      "title": "Payment",
+      "description": "Rent and utilities payment receipt log",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "memberId": { "type": "string" },
+        "memberName": { "type": "string" },
+        "roomNo": { "type": "string" },
+        "seatNo": { "type": "string" },
+        "amount": { "type": "number" },
+        "type": { "type": "string", "enum": ["Rent", "Food", "Advance", "Extra"] },
+        "method": { "type": "string", "enum": ["Cash", "bKash", "Nagad", "Rocket"] },
+        "transactionId": { "type": "string" },
+        "month": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["Paid", "Pending"] }
+      },
+      "required": ["id", "memberId", "memberName", "amount", "type", "method", "month", "timestamp", "status"]
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "Financial accounting transaction log (expense or global income)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string", "enum": ["Food", "Electricity", "Gas", "WiFi", "Salary", "Maintenance", "Others"] },
+        "type": { "type": "string", "enum": ["Expense", "Income"] },
+        "amount": { "type": "number" },
+        "date": { "type": "string" },
+        "note": { "type": "string" },
+        "recordedBy": { "type": "string" }
+      },
+      "required": ["id", "title", "category", "type", "amount", "date"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "System-generated notification alerts",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string", "enum": ["Due", "Payment", "Vacancy", "General"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string" },
+        "read": { "type": "boolean" }
+      },
+      "required": ["id", "title", "message", "type", "createdAt", "read"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Administrative authority and staff permissions",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["Super Admin", "Manager", "Staff"] },
+        "status": { "type": "string", "enum": ["Active", "Inactive"] }
+      },
+      "required": ["id", "email", "name", "role", "status"]
+    }
+  },
+  "firestore": {
+    "rooms/{roomId}": {
+      "schema": { "$ref": "#/entities/Room" },
+      "description": "Room documents"
+    },
+    "seats/{seatId}": {
+      "schema": { "$ref": "#/entities/Seat" },
+      "description": "Individual seat records"
+    },
+    "members/{memberId}": {
+      "schema": { "$ref": "#/entities/Member" },
+      "description": "Active and past boarders"
+    },
+    "packages/{packageId}": {
+      "schema": { "$ref": "#/entities/Package" },
+      "description": "Pricing tiers and meal subscriptions"
+    },
+    "payments/{paymentId}": {
+      "schema": { "$ref": "#/entities/Payment" },
+      "description": "Boarder payment log"
+    },
+    "expenses/{expenseId}": {
+      "schema": { "$ref": "#/entities/Expense" },
+      "description": "Income/Expense transaction logs"
+    },
+    "notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/Notification" },
+      "description": "All system-wide notifications"
+    },
+    "admins/{adminId}": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "Registered administrators"
+    }
+  }
+}

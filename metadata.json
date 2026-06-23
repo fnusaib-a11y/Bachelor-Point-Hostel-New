@@ -1,0 +1,8 @@
+{
+  "name": "Bachelor Point Hostel",
+  "description": "A premium, professional hostel ecosystem for room, seat, member, payment, and expense management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
