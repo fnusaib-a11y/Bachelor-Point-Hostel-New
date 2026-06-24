@@ -39,7 +39,7 @@ export function MemberProfileCard({
 
   // Collect Cash payment fields
   const [payAmount, setPayAmount] = useState(member.dueAmount);
-  const [payType, setPayType] = useState<string>("SeatRent");
+  const [payType, setPayType] = useState<string>(member.packageName || "Basic");
   const [payMethod, setPayMethod] = useState<"Cash" | "bKash" | "Nagad" | "Rocket">("bKash");
 
   const [paySuccess, setPaySuccess] = useState(false);
@@ -59,6 +59,7 @@ export function MemberProfileCard({
     setInstitutionName(member.institutionName || "");
     setIdCardNo(member.idCardNo || "");
     setPayAmount(member.dueAmount);
+    setPayType(member.packageName || "Basic");
     setPhotoUrl(member.photoUrl || "");
   }, [member]);
 
@@ -443,16 +444,9 @@ export function MemberProfileCard({
                         onChange={(e) => setPayType(e.target.value)}
                         className="w-full p-2 bg-slate-50 border border-slate-200 text-xs rounded-lg font-bold font-sans text-slate-705"
                       >
-                        <option value="SeatRent">চ) সিট ভাড়া (Seat Rent)</option>
-                        <option value="AdvanceBooking">ক) অগ্রিম বুকিং (Advance Booking)</option>
-                        <option value="Package1">খ) প্যাকেজ ১ (Package 1)</option>
-                        <option value="Package2">গ) প্যাকেজ ২ (Package 2)</option>
-                        <option value="Package3">ঘ) প্যাকেজ ৩ (Package 3)</option>
-                        <option value="Package4">ঙ) প্যাকেজ ৪ (Package 4)</option>
-                        <option value="Penalty">ছ) জরিমানা / প্যানাল্টি ফাইন</option>
-                        <option value="OldGoodsSale">জ) পুরাতন মালামাল বিক্রয়</option>
-                        <option value="Rent">রুম ভাড়া (সাধারণ)</option>
-                        <option value="Food">খাবার বিল পরিশোধ</option>
+                        <option value={member.packageName || "Basic"}>
+                          {getPackageLabelInBengali(member.packageName || "Basic")}
+                        </option>
                       </select>
                     </div>
 

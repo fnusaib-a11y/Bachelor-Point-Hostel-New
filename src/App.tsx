@@ -1726,7 +1726,19 @@ export default function App() {
               )}
 
               {/* Stats Cards Row */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" id="stats_cards_grid">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4" id="stats_cards_grid">
+                <div className="bg-white p-5 rounded-xl border border-emerald-50 shadow-xs flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
+                    <Users className="w-6 h-6" />
+                  </div>
+                  <div className="font-sans">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">মোট সক্রিয় বর্ডার</span>
+                    <span className="text-lg font-black text-gray-900 block mt-0.5">
+                      {members.filter((m) => m.status === "Active").length} জন
+                    </span>
+                  </div>
+                </div>
+
                 <div className="bg-white p-5 rounded-xl border border-emerald-50 shadow-xs flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
                     <Building className="w-6 h-6" />
@@ -1741,7 +1753,7 @@ export default function App() {
 
                 <div className="bg-white p-5 rounded-xl border border-emerald-50 shadow-xs flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 shrink-0">
-                    <Users className="w-6 h-6" />
+                    <Sparkles className="w-6 h-6" />
                   </div>
                   <div className="font-sans">
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">ফাঁকা সিট সংখ্যা</span>
