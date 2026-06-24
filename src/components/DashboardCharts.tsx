@@ -195,7 +195,6 @@ export function DashboardCharts({ payments, expenses, seatStatusCounts }: Dashbo
             <div className="flex items-center gap-3">
               <span className="text-2xl">💰</span>
               <div className="flex flex-col">
-                <span className="font-extrabold text-xs text-emerald-900/60 uppercase tracking-wider font-sans">১) প্রথম বক্স</span>
                 <span className="font-black text-sm text-emerald-950 font-sans">মোট আয়</span>
               </div>
             </div>
@@ -207,7 +206,6 @@ export function DashboardCharts({ payments, expenses, seatStatusCounts }: Dashbo
             <div className="flex items-center gap-3">
               <span className="text-2xl">💸</span>
               <div className="flex flex-col">
-                <span className="font-extrabold text-xs text-rose-900/60 uppercase tracking-wider font-sans">২) দ্বিতীয় বক্স</span>
                 <span className="font-black text-sm text-rose-950 font-sans">মোট ব্যয়</span>
               </div>
             </div>
@@ -223,7 +221,6 @@ export function DashboardCharts({ payments, expenses, seatStatusCounts }: Dashbo
             <div className="flex items-center gap-3">
               <span className="text-2xl">{currentMonthProfitLoss >= 0 ? "📈" : "📉"}</span>
               <div className="flex flex-col">
-                <span className="font-extrabold text-xs opacity-60 uppercase tracking-wider font-sans">৩) তৃতীয় বক্স</span>
                 <span className="font-black text-sm font-sans">লাভ / ক্ষতি</span>
               </div>
             </div>

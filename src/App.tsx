@@ -63,6 +63,7 @@ import {
   Check,
   Megaphone,
   Send,
+  Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -178,6 +179,12 @@ export default function App() {
   // Publishing/Database management states
   const [dbActionLoading, setDbActionLoading] = useState(false);
   const [dbActionStatus, setDbActionStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  // Submitting states for buttons to show spin feedback
+  const [isSubmittingMember, setIsSubmittingMember] = useState(false);
+  const [isSubmittingExpense, setIsSubmittingExpense] = useState(false);
+  const [isSubmittingPackage, setIsSubmittingPackage] = useState(false);
+  const [isSubmittingCategory, setIsSubmittingCategory] = useState(false);
 
   // Custom alert/confirm modal state to replace iframe-disabled window/safari alerts
   const [alertConfig, setAlertConfig] = useState<{ isOpen: boolean; title: string; message: string; type: "alert" | "success" | "error" }>({
@@ -819,14 +826,34 @@ export default function App() {
   // Register Enrolled Active Boarder Flow
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMemName || !newMemPhone || !newMemRoomId || !newMemSeatId) return;
+    if (!newMemName.trim()) {
+      showAlert("দয়া করে বর্ডারের পুরো নাম লিখুন।", "তথ্য অসম্পূর্ণ", "alert");
+      return;
+    }
+    if (!newMemPhone.trim()) {
+      showAlert("দয়া করে সক্রিয় মোবাইল নম্বর লিখুন।", "তথ্য অসম্পূর্ণ", "alert");
+      return;
+    }
+    if (!newMemRoomId) {
+      showAlert("দয়া করে একটি রুম নম্বর নির্বাচন করুন।", "তথ্য অসম্পূর্ণ", "alert");
+      return;
+    }
+    if (!newMemSeatId) {
+      showAlert("দয়া করে একটি সিট বরাদ্দ করুন।", "তথ্য অসম্পূর্ণ", "alert");
+      return;
+    }
 
+    setIsSubmittingMember(true);
     try {
       const activeSeatObj = seats.find((s) => s.id === newMemSeatId);
       const activeRoomObj = rooms.find((r) => r.id === newMemRoomId);
       const pkgObj = (packages.length > 0 ? packages : DEFAULT_PACKAGES).find((p) => p.name === newMemPackageName);
 
-      if (!activeSeatObj || !activeRoomObj || !pkgObj) return;
+      if (!activeSeatObj || !activeRoomObj || !pkgObj) {
+        showAlert("রুম বা সিটের তথ্য পাওয়া যায়নি। অনুগ্রহ করে পুনরায় সঠিক তথ্য নির্বাচন করুন।", "ত্রুটি", "error");
+        setIsSubmittingMember(false);
+        return;
+      }
 
       const newMemberId = `member_${Date.now()}`;
       const rentCharge = activeSeatObj.rentPrice;
@@ -914,9 +941,17 @@ export default function App() {
       setIsAddingMember(false);
       setSelectedMemberId(newMemberId);
       setDashboardTab("members");
+      
+      // Artificial short delay to let the user see the "completed" state nicely
+      setTimeout(() => {
+        setIsSubmittingMember(false);
+        showAlert(`${newMember.fullName} সফলভাবে সিট ${newMember.seatNo} (রুম ${newMember.roomNo}) এ চেক-ইন সম্পন্ন করেছেন।`, "চেক-ইন সফল", "success");
+      }, 500);
 
     } catch (err) {
       console.error("Onboarding failed:", err);
+      showAlert("ভর্তি সম্পন্ন করা সম্ভব হয়নি। অনুগ্রহ করে ডাটাবেস সংযোগ বা সঠিক তথ্য দিয়ে পুনরায় চেষ্টা করুন।", "ত্রুটি", "error");
+      setIsSubmittingMember(false);
     }
   };
 
@@ -1036,8 +1071,17 @@ export default function App() {
       resolvedAmount = expPaidAmount; // cash outflow is the paid amount
     }
 
-    if (!newExpTitle || resolvedAmount <= 0 && newExpType === "Expense" && !isPartialPayment) return;
+    if (!newExpTitle.trim()) {
+      showAlert("দয়া করে বিবরণ (Title) লিখুন।", "তথ্য অসম্পূর্ণ", "alert");
+      return;
+    }
 
+    if (newExpType === "Expense" && !isPartialPayment && resolvedAmount <= 0) {
+      showAlert("দয়া করে ব্যয়ের সঠিক পরিমাণ লিখুন।", "তথ্য অসম্পূর্ণ", "alert");
+      return;
+    }
+
+    setIsSubmittingExpense(true);
     try {
       const expenseObjId = `exp_${Date.now()}`;
       const newExpense: Expense = {
@@ -1059,7 +1103,7 @@ export default function App() {
       // Notification
       let notifMessage = `বিবরণ: ${newExpense.title} বাবদ মোট ৳${newExpense.amount} টাকার হিসাব ক্যাশ লেজারে অন্তর্ভুক্ত হয়েছে।`;
       if (newExpType === "Expense" && isPartialPayment) {
-        notifMessage = `বিবরণ: ${newExpense.title}ক্রয় (${merchant || "দোকানদার"})। মোট বাজারমূল্য ৳${totalAmt}, পরিশোধিত ৳${paidAmt}, বকেয়া রয়েছে বাকী ৳${dueAmt}।`;
+        notifMessage = `বিবরণ: ${newExpense.title} ক্রয় (${merchant || "দোকানদার"})। মোট বাজারমূল্য ৳${totalAmt}, পরিশোধিত ৳${paidAmt}, বকেয়া রয়েছে বাকী ৳${dueAmt}।`;
       }
 
       await addDoc(collection(db, "notifications"), {
@@ -1080,17 +1124,26 @@ export default function App() {
       setIsPartialPayment(false);
       setNewExpDate(runningDate);
       setIsAddingExpense(false);
-      showAlert("লেনদেনটি সফলভাবে ক্যাশ বহিতে পোস্টিং করা হয়েছে!", "লেনদেন পোস্টিং সম্পন্ন", "success");
+      
+      setTimeout(() => {
+        setIsSubmittingExpense(false);
+        showAlert("লেনদেনটি সফলভাবে ক্যাশ বহিতে পোস্টিং করা হয়েছে!", "লেনদেন পোস্টিং সম্পন্ন", "success");
+      }, 500);
     } catch (err) {
       console.error("Failed to post transaction ledger:", err);
       showAlert("ক্যাশ বহিতে পোস্টিং ব্যর্থ হয়েছে। ডাটাবেস পরীক্ষা করুন।", "ত্রুটি", "error");
+      setIsSubmittingExpense(false);
     }
   };
 
   // Add customized sector/category
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCategoryName.trim()) return;
+    if (!newCategoryName.trim()) {
+      showAlert("দয়া করে খাতের নাম লিখুন।", "তথ্য অসম্পূর্ণ", "alert");
+      return;
+    }
+    setIsSubmittingCategory(true);
     try {
       const catId = `cat_${Date.now()}`;
       await setDoc(doc(db, "expense_categories", catId), {
@@ -1099,12 +1152,17 @@ export default function App() {
         type: newCategoryType,
         createdAt: new Date().toISOString()
       });
+      const nameSaved = newCategoryName;
       setNewCategoryName("");
       setIsAddingCategory(false);
-      showAlert(`নতুন খাত/ক্যাটাগরি "${newCategoryName}" সফলভাবে তৈরি হয়েছে!`, "খাত যোগ সম্পন্ন", "success");
+      setTimeout(() => {
+        setIsSubmittingCategory(false);
+        showAlert(`নতুন খাত/ক্যাটাগরি "${nameSaved}" সফলভাবে তৈরি হয়েছে!`, "খাত যোগ সম্পন্ন", "success");
+      }, 500);
     } catch (err) {
       console.error("Failed to append custom category:", err);
       showAlert("খাত যোগ করতে সমস্যা হয়েছে।", "ত্রুটি", "error");
+      setIsSubmittingCategory(false);
     }
   };
 
@@ -1177,6 +1235,16 @@ export default function App() {
   // Add/Edit customized billing package rules
   const handleAddPackage = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!newPkgName.trim()) {
+      showAlert("দয়া করে প্যাকেজের নাম লিখুন।", "তথ্য অসম্পূর্ণ", "alert");
+      return;
+    }
+    if (newPkgPrice <= 0) {
+      showAlert("দয়া করে প্যাকেজের সঠিক মূল্য লিখুন।", "তথ্য অসম্পূর্ণ", "alert");
+      return;
+    }
+
+    setIsSubmittingPackage(true);
     try {
       // Dynamic ID generation if not editing
       const pkgId = editingPkgId || `pkg_${Date.now()}`;
@@ -1196,10 +1264,15 @@ export default function App() {
       await setDoc(doc(db, "packages", pkgId), newPkg);
       setIsAddingPackage(false);
       setEditingPkgId(null);
-      showAlert("প্যাকেজ সংক্রান্ত তথ্য সফলভাবে সংরক্ষণ করা হয়েছে!", "সফল", "success");
+      
+      setTimeout(() => {
+        setIsSubmittingPackage(false);
+        showAlert("প্যাকেজ সংক্রান্ত তথ্য সফলভাবে সংরক্ষণ করা হয়েছে!", "সফল", "success");
+      }, 500);
     } catch (err) {
       console.error("Failed to setup package tier:", err);
       showAlert("প্যাকেজ সংরক্ষণ করতে ব্যর্থ হয়েছে।", "ত্রুটি", "error");
+      setIsSubmittingPackage(false);
     }
   };
 
@@ -3152,9 +3225,17 @@ export default function App() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl cursor-pointer"
+                  disabled={isSubmittingMember}
+                  className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white text-xs font-semibold rounded-xl cursor-pointer flex items-center justify-center gap-2"
                 >
-                  ভর্তি ও চেক-ইন সম্পন্ন করুন
+                  {isSubmittingMember ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>প্রক্রিয়াধীন...</span>
+                    </>
+                  ) : (
+                    <span>ভর্তি ও চেক-ইন সম্পন্ন করুন</span>
+                  )}
                 </button>
               </div>
             </form>
@@ -3356,11 +3437,23 @@ export default function App() {
                 </button>
                 <button
                   type="submit"
-                  className={`flex-1 py-2 text-white text-xs font-bold rounded-xl cursor-pointer shadow-sm transition-colors ${
-                    newExpType === "Income" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-650 hover:bg-rose-700"
+                  disabled={isSubmittingExpense}
+                  className={`flex-1 py-2 text-white text-xs font-bold rounded-xl cursor-pointer shadow-sm transition-colors flex items-center justify-center gap-2 ${
+                    isSubmittingExpense 
+                      ? "bg-slate-450" 
+                      : newExpType === "Income" 
+                        ? "bg-emerald-600 hover:bg-emerald-700" 
+                        : "bg-rose-650 hover:bg-rose-700"
                   }`}
                 >
-                  {newExpType === "Income" ? "আয় হিসাবে যোগ করুন" : "ব্যয় হিসাবে যোগ করুন"}
+                  {isSubmittingExpense ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>যোগ হচ্ছে...</span>
+                    </>
+                  ) : (
+                    <span>{newExpType === "Income" ? "আয় হিসাবে যোগ করুন" : "ব্যয় হিসাবে যোগ করুন"}</span>
+                  )}
                 </button>
               </div>
             </form>
@@ -3415,9 +3508,17 @@ export default function App() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl scroll-p-1"
+                  disabled={isSubmittingCategory}
+                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white text-xs font-bold rounded-xl scroll-p-1 flex items-center justify-center gap-2"
                 >
-                  খাত নিশ্চিত করুন
+                  {isSubmittingCategory ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>সংরক্ষণ হচ্ছে...</span>
+                    </>
+                  ) : (
+                    <span>খাত নিশ্চিত করুন</span>
+                  )}
                 </button>
               </div>
             </form>
@@ -3603,9 +3704,17 @@ export default function App() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl cursor-pointer"
+                  disabled={isSubmittingPackage}
+                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white text-xs font-bold rounded-xl cursor-pointer flex items-center justify-center gap-2"
                 >
-                  সংরক্ষণ করুন
+                  {isSubmittingPackage ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>সংরক্ষণ হচ্ছে...</span>
+                    </>
+                  ) : (
+                    <span>সংরক্ষণ করুন</span>
+                  )}
                 </button>
               </div>
             </form>

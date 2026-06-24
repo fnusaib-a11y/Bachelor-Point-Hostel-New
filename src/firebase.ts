@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { initializeFirestore, doc, getDocFromServer, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
+import { initializeFirestore, doc, getDocFromServer, persistentLocalCache, persistentMultipleTabManager, getFirestore } from "firebase/firestore";
 
 // Your custom production Firebase configuration
 const firebaseConfig = {
@@ -17,13 +17,36 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore with experimentalForceLongPolling and IndexedDB persistent cache
-export const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
-  })
-});
+// Initialize Firestore safely with fallback for sandboxed iframe environments where IndexedDB might be restricted
+let dbInstance;
+try {
+  // Test if IndexedDB is available/accessible
+  const isIndexedDBAccessible = typeof window !== "undefined" && "indexedDB" in window;
+  if (isIndexedDBAccessible) {
+    dbInstance = initializeFirestore(app, {
+      experimentalForceLongPolling: true,
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager()
+      })
+    });
+  } else {
+    dbInstance = initializeFirestore(app, {
+      experimentalForceLongPolling: true
+    });
+  }
+} catch (error) {
+  console.warn("Persistent local cache failed to initialize (likely due to iframe sandbox restrictions). Falling back to memory-only Firestore instance.", error);
+  try {
+    dbInstance = initializeFirestore(app, {
+      experimentalForceLongPolling: true
+    });
+  } catch (fallbackError) {
+    // If initializeFirestore throws because it's already been called, get the existing instance
+    dbInstance = getFirestore(app);
+  }
+}
+
+export const db = dbInstance;
 export const auth = getAuth();
 
 // Test connection with a slight delay to allow Firebase connection pooling to spin up
