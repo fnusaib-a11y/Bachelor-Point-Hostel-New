@@ -859,6 +859,13 @@ export default function App() {
       const rentCharge = activeSeatObj.rentPrice;
       const packagePrice = pkgObj.price;
       const totalInitialBill = rentCharge + packagePrice;
+
+      if (newMemAdvancePaid > totalInitialBill) {
+        showAlert("অগ্রিম বুকিং ফি সর্বমোট চার্জের চেয়ে বেশি হতে পারে না!", "ভুল তথ্য", "error");
+        setIsSubmittingMember(false);
+        return;
+      }
+
       const outstandingDue = Math.max(0, totalInitialBill - newMemAdvancePaid);
 
       const newMember: Member = {
@@ -1076,6 +1083,11 @@ export default function App() {
       return;
     }
 
+    if (newExpType === "Expense" && isPartialPayment && expPaidAmount > expTotalAmount) {
+      showAlert("নগদ পরিশোধের পরিমাণ মোট ক্রয় মূল্যের চেয়ে বেশি হতে পারে না!", "ভুল তথ্য", "error");
+      return;
+    }
+
     if (newExpType === "Expense" && !isPartialPayment && resolvedAmount <= 0) {
       showAlert("দয়া করে ব্যয়ের সঠিক পরিমাণ লিখুন।", "তথ্য অসম্পূর্ণ", "alert");
       return;
@@ -1198,6 +1210,10 @@ export default function App() {
   const handleRepayVendorDue = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!payingDueExpense || repayAmount <= 0) return;
+    if (repayAmount > (payingDueExpense.dueAmount || 0)) {
+      showAlert("পরিশোধের পরিমাণ অবশিষ্ট বকেয়ার চেয়ে বেশি হতে পারে না!", "ভুল তথ্য", "error");
+      return;
+    }
     try {
       const currentPaid = payingDueExpense.paidAmount || payingDueExpense.amount;
       const currentTotal = payingDueExpense.totalAmount || payingDueExpense.amount;
@@ -3203,9 +3219,14 @@ export default function App() {
                           value={newMemAdvancePaid || ""}
                           onChange={(e) => setNewMemAdvancePaid(Math.max(0, Number(e.target.value)))}
                           placeholder="যেমন: ৪০০"
-                          className="w-full px-2.5 py-1.5 border border-emerald-300 bg-white text-xs font-black text-slate-900 rounded-lg focus:outline-none"
+                          className={`w-full px-2.5 py-1.5 border ${newMemAdvancePaid > totalBill ? 'border-red-500 bg-red-50 text-red-900' : 'border-emerald-300 bg-white text-slate-900'} text-xs font-black rounded-lg focus:outline-none`}
                         />
                       </div>
+                      {newMemAdvancePaid > totalBill && (
+                        <div className="p-2 bg-red-50 border border-red-200 text-red-700 text-[10px] font-extrabold rounded-lg animate-pulse">
+                          ⚠️ ভুল তথ্য: অগ্রিম পেমেন্ট মোট চার্জ (৳{totalBill}) এর চেয়ে বেশি হতে পারে না!
+                        </div>
+                      )}
                       <div className="flex justify-between text-red-700 font-extrabold text-[11px] pt-1">
                         <span>বাকি বকেয়া থাকবে (Remaining Dues):</span>
                         <span>৳{Math.max(0, totalBill - newMemAdvancePaid)}</span>
@@ -3316,13 +3337,18 @@ export default function App() {
                         value={expPaidAmount === 0 ? "" : expPaidAmount}
                         onChange={(e) => setExpPaidAmount(Number(e.target.value))}
                         min={0}
-                        max={expTotalAmount}
                         placeholder="যেমন: ৬০"
-                        className="w-full px-2.5 py-1.5 bg-white border border-slate-200 text-xs rounded-lg font-bold font-sans text-emerald-800"
+                        className={`w-full px-2.5 py-1.5 border ${expPaidAmount > expTotalAmount ? 'border-red-500 bg-red-50 text-red-900' : 'border-slate-200 bg-white text-emerald-800'} text-xs rounded-lg font-bold font-sans`}
                         required
                       />
                     </div>
                   </div>
+
+                  {expPaidAmount > expTotalAmount && (
+                    <div className="p-2 bg-red-50 border border-red-200 text-red-700 text-[10px] font-extrabold rounded-lg animate-pulse">
+                      ⚠️ ভুল তথ্য: নগদ প্রদানকৃত পরিমাণ মোট ক্রয় মূল্যের (৳{expTotalAmount}) চেয়ে বেশি হতে পারে না!
+                    </div>
+                  )}
 
                   <div className="flex justify-between items-center text-[11px] bg-amber-50 p-2 border border-amber-200 rounded-lg text-slate-700">
                     <span className="font-bold">দোকান্দারের বকেয়া (বাকি):</span>
@@ -3571,12 +3597,16 @@ export default function App() {
                   value={repayAmount === 0 ? "" : repayAmount}
                   onChange={(e) => setRepayAmount(Number(e.target.value))}
                   min={1}
-                  max={payingDueExpense.dueAmount || 0}
                   placeholder={`সর্বোচ্চ ৳${payingDueExpense.dueAmount || 0}`}
-                  className="w-full px-3 py-2 border border-slate-200 text-xs rounded-lg focus:outline outline-amber-500 font-extrabold text-amber-900"
+                  className={`w-full px-3 py-2 border ${repayAmount > (payingDueExpense.dueAmount || 0) ? 'border-red-500 bg-red-50 text-red-950 font-black' : 'border-slate-200 text-amber-900 font-extrabold'} text-xs rounded-lg focus:outline outline-amber-500`}
                   required
                 />
               </div>
+              {repayAmount > (payingDueExpense.dueAmount || 0) && (
+                <div className="p-2 bg-red-50 border border-red-200 text-red-700 text-[10px] font-extrabold rounded-lg animate-pulse">
+                  ⚠️ ভুল তথ্য: পরিশোধের পরিমাণ অবশিষ্ট বকেয়া (৳{payingDueExpense.dueAmount || 0}) এর চেয়ে বেশি হতে পারে না!
+                </div>
+              )}
 
               <div className="flex gap-2 pt-2">
                 <button

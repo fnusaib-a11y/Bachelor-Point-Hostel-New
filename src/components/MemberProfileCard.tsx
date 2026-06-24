@@ -85,6 +85,10 @@ export function MemberProfileCard({
   const handlePaySubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (payAmount <= 0) return;
+    if (payAmount > member.dueAmount) {
+      alert("আদায়কৃত টাকার পরিমাণ চলতি বকেয়ার চেয়ে বেশি হতে পারে না!");
+      return;
+    }
 
     onPaymentCollect(member.id, payAmount, payType, payMethod);
     setPaySuccess(true);
@@ -421,11 +425,15 @@ export function MemberProfileCard({
                       type="number"
                       value={payAmount}
                       onChange={(e) => setPayAmount(Number(e.target.value))}
-                      min={100}
-                      className="w-full px-3 py-2 border border-slate-200 text-xs font-bold text-emerald-800 rounded-lg focus:outline-none focus:border-emerald-600"
+                      className={`w-full px-3 py-2 border ${payAmount > member.dueAmount ? 'border-red-500 bg-red-50 text-red-900 font-black' : 'border-slate-200 text-emerald-800 font-bold'} text-xs rounded-lg focus:outline-none focus:border-emerald-600`}
                       required
                     />
                   </div>
+                  {payAmount > member.dueAmount && (
+                    <div className="p-2 bg-red-50 border border-red-200 text-red-700 text-[10px] font-extrabold rounded-lg animate-pulse font-sans">
+                      ⚠️ ভুল তথ্য: আদায়কৃত টাকার পরিমাণ চলতি বকেয়া (৳{member.dueAmount}) এর চেয়ে বেশি হতে পারে না!
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
