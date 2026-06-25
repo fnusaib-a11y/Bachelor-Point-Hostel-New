@@ -89,6 +89,7 @@ export default function App() {
   // Search/Filters states
   const [memberSearch, setMemberSearch] = useState("");
   const [memberStatusFilter, setMemberStatusFilter] = useState<"All" | "Active" | "Inactive">("All");
+  const [paymentTypeFilter, setPaymentTypeFilter] = useState<string>("All");
 
   // Multi-Form Toggles
   const [isAddingMember, setIsAddingMember] = useState(false);
@@ -1460,12 +1461,14 @@ export default function App() {
       case "Package2": return "গ) প্যাকেজ ২";
       case "Package3": return "ঘ) প্যাকেজ ৩";
       case "Package4": return "ঙ) প্যাকেজ ৪";
-      case "SeatRent": return "চ) সিট ভাড়া";
+      case "SeatRent":
+      case "Basic":
+        return "চ) সিট ভাড়া";
       case "Penalty": return "ছ) জরিমানা/পেনাল্টি";
       case "OldGoodsSale": return "জ) পুরাতন মালামাল বিক্রয়";
       case "Rent": return "রুম ভাড়া (সাধারণ)";
       case "Food": return "খাবারের বিল";
-      default: return type;
+      default: return type || "অন্যান্য";
     }
   };
 
@@ -2189,48 +2192,110 @@ export default function App() {
                 <p className="text-xs text-gray-450 font-sans">আবাসিক বর্ডারদের পরিশোধিত ভাড়ার ক্যাশ আদায়ের সম্পূর্ণ বিবরণ।</p>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs font-sans">
-                  <thead className="bg-[#f8fafc]/80 text-gray-500 uppercase text-[10px] font-bold border-b">
-                    <tr>
-                      <th className="p-3">বোর্ডার নাম</th>
-                      <th className="p-3 text-center">রুম এবং বেড</th>
-                      <th className="p-3 text-center">আদায়ের মাস</th>
-                      <th className="p-3 text-center">পরিশোধ মাধ্যম</th>
-                      <th className="p-3 text-center">লেনদেন আইডি (Trx ID)</th>
-                      <th className="p-3 text-right">আদায়কৃত টাকা</th>
-                      <th className="p-3">রসিদ ও চালান</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y text-gray-700 font-sans">
-                    {payments.map((p) => (
-                      <tr key={p.id} className="hover:bg-slate-50/20">
-                        <td className="p-3 font-semibold text-gray-900">{p.memberName}</td>
-                        <td className="p-3 text-center font-mono text-gray-500">
-                          রুম: {p.roomNo} ({p.seatNo})
-                        </td>
-                        <td className="p-3 text-center text-gray-500">{getMonthInBengali(p.month)}</td>
-                        <td className="p-3 text-center text-emerald-800 font-bold">{getPaymentMethodInBengali(p.method)}</td>
-                        <td className="p-3 text-center text-gray-400 font-mono uppercase">{p.transactionId}</td>
-                        <td className="p-3 text-right font-extrabold text-emerald-700">৳{p.amount}</td>
-                        <td className="p-3">
-                          <button
-                            onClick={() => setSelectedInvoice(p)}
-                            className="bg-slate-50 hover:bg-emerald-50 border hover:text-emerald-800 py-1 px-2.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer"
-                          >
-                            ডিজিটাল রসিদ
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {payments.length === 0 && (
-                      <tr>
-                        <td colSpan={7} className="p-8 text-center text-gray-400 italic">এখনো পর্যন্ত কোনো আদায়ের তথ্য পোস্ট করা নেই।</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+              {/* Income Categories Stats & Filter Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 font-sans" id="income_categories_filter_grid">
+                {[
+                  { id: "All", label: "সব খাত (All)", color: "border-slate-200 hover:bg-slate-50 text-slate-850" },
+                  { id: "AdvanceBooking", label: "অগ্রিম বুকিং", color: "border-amber-200 hover:bg-amber-50/50 text-amber-805" },
+                  { id: "Package1", label: "প্যাকেজ ১", color: "border-blue-200 hover:bg-blue-50/50 text-blue-805" },
+                  { id: "Package2", label: "প্যাকেজ ২", color: "border-indigo-200 hover:bg-indigo-50/50 text-indigo-805" },
+                  { id: "Package3", label: "প্যাকেজ ৩", color: "border-purple-200 hover:bg-purple-50/50 text-purple-805" },
+                  { id: "Package4", label: "প্যাকেজ ৪", color: "border-fuchsia-200 hover:bg-fuchsia-50/50 text-fuchsia-805" },
+                  { id: "SeatRent", label: "সিট ভাড়া", color: "border-emerald-200 hover:bg-emerald-50/50 text-emerald-805" },
+                  { id: "Penalty", label: "জরিমানা/ ফেনাল্টি ফাইন", color: "border-rose-200 hover:bg-rose-50/50 text-rose-805" },
+                  { id: "OldGoodsSale", label: "পুরাতন মালামাল বিক্রয়", color: "border-orange-200 hover:bg-orange-50/50 text-orange-805" },
+                  { id: "Food", label: "খাবারের বিল", color: "border-teal-200 hover:bg-teal-50/50 text-teal-805" },
+                ].map((cat) => {
+                  const isSelected = paymentTypeFilter === cat.id;
+                  const totalAmt = payments
+                    .filter((p) => {
+                      if (cat.id === "All") return true;
+                      if (cat.id === "SeatRent") {
+                        return p.type === "SeatRent" || p.type === "Basic" || p.type === "Rent";
+                      }
+                      return p.type === cat.id;
+                    })
+                    .reduce((sum, p) => sum + p.amount, 0);
+
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => setPaymentTypeFilter(cat.id)}
+                      className={`text-left p-3.5 rounded-xl border transition-all cursor-pointer ${cat.color} ${
+                        isSelected
+                          ? "ring-2 ring-offset-2 ring-emerald-600 bg-emerald-50/10 shadow-sm font-bold"
+                          : "bg-white/90"
+                      }`}
+                    >
+                      <span className="text-[10px] font-bold text-gray-400 block uppercase tracking-wider">
+                        {cat.label}
+                      </span>
+                      <span className="text-base font-black block mt-1 font-sans">
+                        ৳{totalAmt.toLocaleString()}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
+
+              {(() => {
+                const filteredList = payments.filter((p) => {
+                  if (paymentTypeFilter === "All") return true;
+                  if (paymentTypeFilter === "SeatRent") {
+                    return p.type === "SeatRent" || p.type === "Basic" || p.type === "Rent";
+                  }
+                  return p.type === paymentTypeFilter;
+                });
+
+                return (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs font-sans">
+                      <thead className="bg-[#f8fafc]/80 text-gray-500 uppercase text-[10px] font-bold border-b">
+                        <tr>
+                          <th className="p-3">বোর্ডার নাম</th>
+                          <th className="p-3 text-center">রুম এবং বেড</th>
+                          <th className="p-3 text-center">আদায়ের মাস</th>
+                          <th className="p-3 text-center">আদায়ের খাত</th>
+                          <th className="p-3 text-center">পরিশোধ মাধ্যম</th>
+                          <th className="p-3 text-center">লেনদেন আইডি (Trx ID)</th>
+                          <th className="p-3 text-right">আদায়কৃত টাকা</th>
+                          <th className="p-3">রসিদ ও চালান</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y text-gray-700 font-sans">
+                        {filteredList.map((p) => (
+                          <tr key={p.id} className="hover:bg-slate-50/20">
+                            <td className="p-3 font-semibold text-gray-900">{p.memberName}</td>
+                            <td className="p-3 text-center font-mono text-gray-500">
+                              রুম: {p.roomNo} ({p.seatNo})
+                            </td>
+                            <td className="p-3 text-center text-gray-500">{getMonthInBengali(p.month)}</td>
+                            <td className="p-3 text-center font-bold text-indigo-750">
+                              {getPaymentTypeInBengali(p.type)}
+                            </td>
+                            <td className="p-3 text-center text-emerald-800 font-bold">{getPaymentMethodInBengali(p.method)}</td>
+                            <td className="p-3 text-center text-gray-400 font-mono uppercase">{p.transactionId}</td>
+                            <td className="p-3 text-right font-extrabold text-emerald-700">৳{p.amount}</td>
+                            <td className="p-3">
+                              <button
+                                onClick={() => setSelectedInvoice(p)}
+                                className="bg-slate-50 hover:bg-emerald-50 border hover:text-emerald-800 py-1 px-2.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer"
+                              >
+                                ডিজিটাল রসিদ
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                        {filteredList.length === 0 && (
+                          <tr>
+                            <td colSpan={8} className="p-8 text-center text-gray-400 italic">এই খাতে কোনো আদায়ের তথ্য পোস্ট করা নেই।</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()}
             </div>
           )}
 

@@ -206,11 +206,29 @@ export function InvoiceModal({ payment, onClose }: InvoiceModalProps) {
 
   const getPaymentTypeInBengali = (type: string) => {
     switch (type) {
-      case "Rent": return "রুম ভাড়া (Rent)";
-      case "Food": return "খাবার বিল (Food)";
-      case "Advance": return "অগ্রিম অর্থ (Advance)";
-      case "Extra": return "অতিরিক্ত বিল (Extra)";
-      default: return type;
+      case "AdvanceBooking":
+        return "অগ্রিম বুকিং";
+      case "Package1":
+        return "প্যাকেজ ১";
+      case "Package2":
+        return "প্যাকেজ ২";
+      case "Package3":
+        return "প্যাকেজ ৩";
+      case "Package4":
+        return "প্যাকেজ ৪";
+      case "SeatRent":
+      case "Basic":
+        return "সিট ভাড়া";
+      case "Penalty":
+        return "জরিমানা/ ফেনাল্টি ফাইন";
+      case "OldGoodsSale":
+        return "পুরাতন মালামাল বিক্রয়";
+      case "Rent":
+        return "সাধারণ রুম ভাড়া";
+      case "Food":
+        return "খাবার বিল";
+      default:
+        return type || "অন্যান্য";
     }
   };
 
