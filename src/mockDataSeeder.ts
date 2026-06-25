@@ -199,6 +199,21 @@ export async function seedDemoTemplateData() {
     await setDoc(doc(db, "members", m.id), m);
   }
 
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonthNum = now.getMonth() + 1;
+  const currentYearMonthStr = `${currentYear}-${String(currentMonthNum).padStart(2, "0")}`;
+  const monthNamesInEnglish = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const currentMonthEng = `${monthNamesInEnglish[now.getMonth()]} ${currentYear}`;
+  
+  // Previous month
+  const prevMonthIndex = (now.getMonth() - 1 + 12) % 12;
+  const prevMonthYear = now.getMonth() === 0 ? currentYear - 1 : currentYear;
+  const prevMonthEng = `${monthNamesInEnglish[prevMonthIndex]} ${prevMonthYear}`;
+
   const dummyPayments: Payment[] = [
     {
       id: "p-101",
@@ -210,7 +225,7 @@ export async function seedDemoTemplateData() {
       type: "Rent",
       method: "bKash",
       transactionId: "BK992857410",
-      month: "May 2026",
+      month: currentMonthEng,
       timestamp: new Date().toISOString(),
       status: "Paid"
     },
@@ -224,7 +239,7 @@ export async function seedDemoTemplateData() {
       type: "Rent",
       method: "Nagad",
       transactionId: "NG88410295",
-      month: "May 2026",
+      month: currentMonthEng,
       timestamp: new Date().toISOString(),
       status: "Paid"
     },
@@ -238,7 +253,7 @@ export async function seedDemoTemplateData() {
       type: "Rent",
       method: "Cash",
       transactionId: "CSH-M524",
-      month: "April 2026",
+      month: prevMonthEng,
       timestamp: new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString(),
       status: "Paid"
     }
@@ -249,13 +264,13 @@ export async function seedDemoTemplateData() {
   }
 
   const dummyExpenses: Expense[] = [
-    { id: "e-1", title: "Monthly Catering Bill (Meals)", category: "Food", type: "Expense", amount: 12500, date: "2026-05-10", note: "April catering split", recordedBy: "Manager Asif" },
-    { id: "e-2", title: "DESCO Electricity Bill", category: "Electricity", type: "Expense", amount: 4800, date: "2026-05-12", note: "Main block aircon consumption", recordedBy: "Manager Asif" },
-    { id: "e-3", title: "Titas Gas Connection", category: "Gas", type: "Expense", amount: 1500, date: "2026-05-15", note: "Catering stove", recordedBy: "Staff Joy" },
-    { id: "e-4", title: "Dot Internet Broadband Speed", category: "WiFi", type: "Expense", amount: 2400, date: "2026-05-01", note: "100Mbps dedicated fiber", recordedBy: "Manager Asif" },
-    { id: "e-5", title: "Cook & Cleaning Staff Salaries", category: "Salary", type: "Expense", amount: 18500, date: "2026-05-20", note: "May payout for 3 support members", recordedBy: "Super Admin" },
-    { id: "e-6", title: "Clogged toilet & basin plumbing", category: "Maintenance", type: "Expense", amount: 3200, date: "2026-05-22", note: "Plumber visit room 101", recordedBy: "Staff Joy" },
-    { id: "e-7", title: "Catering Meal Subsidies Profit", category: "Others", type: "Income", amount: 4800, date: "2026-05-18", note: "Guest dinner event collection", recordedBy: "Staff Joy" }
+    { id: "e-1", title: "Monthly Catering Bill (Meals)", category: "Food", type: "Expense", amount: 12500, date: `${currentYearMonthStr}-10`, note: "April catering split", recordedBy: "Manager Asif" },
+    { id: "e-2", title: "DESCO Electricity Bill", category: "Electricity", type: "Expense", amount: 4800, date: `${currentYearMonthStr}-12`, note: "Main block aircon consumption", recordedBy: "Manager Asif" },
+    { id: "e-3", title: "Titas Gas Connection", category: "Gas", type: "Expense", amount: 1500, date: `${currentYearMonthStr}-15`, note: "Catering stove", recordedBy: "Staff Joy" },
+    { id: "e-4", title: "Dot Internet Broadband Speed", category: "WiFi", type: "Expense", amount: 2400, date: `${currentYearMonthStr}-01`, note: "100Mbps dedicated fiber", recordedBy: "Manager Asif" },
+    { id: "e-5", title: "Cook & Cleaning Staff Salaries", category: "Salary", type: "Expense", amount: 18500, date: `${currentYearMonthStr}-20`, note: "May payout for 3 support members", recordedBy: "Super Admin" },
+    { id: "e-6", title: "Clogged toilet & basin plumbing", category: "Maintenance", type: "Expense", amount: 3200, date: `${currentYearMonthStr}-22`, note: "Plumber visit room 101", recordedBy: "Staff Joy" },
+    { id: "e-7", title: "Catering Meal Subsidies Profit", category: "Others", type: "Income", amount: 4800, date: `${currentYearMonthStr}-18`, note: "Guest dinner event collection", recordedBy: "Staff Joy" }
   ];
 
   for (const exp of dummyExpenses) {

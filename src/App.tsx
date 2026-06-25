@@ -1380,8 +1380,9 @@ export default function App() {
   const totalDuesAmount = members
     .filter((m) => m.dueAmount > 0 && m.status === "Active")
     .reduce((sum, m) => sum + m.dueAmount, 0);
+  const currentBdtMonthStr = new Date().toLocaleString("en-US", { month: "long", year: "numeric" });
   const totalIncomePaid = payments
-    .filter((p) => p.status === "Paid")
+    .filter((p) => p.status === "Paid" && p.month === currentBdtMonthStr)
     .reduce((sum, p) => sum + p.amount, 0);
   const totalExpensePaid = expenses
     .filter((e) => e.type === "Expense")

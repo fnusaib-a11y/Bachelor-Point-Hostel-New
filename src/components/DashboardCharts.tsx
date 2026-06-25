@@ -150,7 +150,7 @@ export function DashboardCharts({ payments, expenses, seatStatusCounts }: Dashbo
   };
 
   expenses.forEach((e) => {
-    if (e.type === "Expense") {
+    if (e.type === "Expense" && e.date.startsWith(currentYearMonth)) {
       expenseBreakdownMap[e.category] = (expenseBreakdownMap[e.category] || 0) + e.amount;
     }
   });
