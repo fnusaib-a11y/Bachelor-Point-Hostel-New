@@ -1390,8 +1390,12 @@ export default function App() {
   const activeSelectedMember = members.find((m) => m.id === selectedMemberId);
 
   const filteredMembersList = members.filter((m) => {
+    const searchLower = memberSearch.toLowerCase();
     const matchesSearch =
-      m.fullName.toLowerCase().includes(memberSearch.toLowerCase()) || m.phone.includes(memberSearch);
+      m.fullName.toLowerCase().includes(searchLower) ||
+      m.phone.includes(memberSearch) ||
+      (m.roomNo && m.roomNo.toLowerCase().includes(searchLower)) ||
+      (m.seatNo && m.seatNo.toLowerCase().includes(searchLower));
     const matchesStatus =
       memberStatusFilter === "All" ||
       (memberStatusFilter === "Active" && m.status === "Active") ||
@@ -1932,8 +1936,8 @@ export default function App() {
                       type="text"
                       value={memberSearch}
                       onChange={(e) => setMemberSearch(e.target.value)}
-                      placeholder="বোর্ডারের নাম দিয়ে খুঁজুন..."
-                      className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 text-xs rounded-xl focus:outline-none focus:border-emerald-600"
+                      placeholder="নাম, রুম বা সিট নম্বর দিয়ে খুঁজুন..."
+                      className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 text-xs rounded-xl focus:outline-none focus:border-emerald-600 w-60"
                     />
                   </div>
 
