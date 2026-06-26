@@ -162,16 +162,7 @@ export function DashboardCharts({ payments, expenses, seatStatusCounts }: Dashbo
     }))
     .filter((v) => v.value > 0);
 
-  const finalExpensePieData =
-    expensePieData.length > 0
-      ? expensePieData
-      : [
-          { name: "খাদ্য ও খাবার", value: 12500 },
-          { name: "বিদ্যুৎ বিল", value: 4800 },
-          { name: "ওয়াইফাই ও ইন্টারনেট", value: 2400 },
-          { name: "রক্ষণাবেক্ষণ", value: 3200 },
-          { name: "কর্মচারী বেতন", value: 18550 },
-        ];
+  const finalExpensePieData = expensePieData;
 
   // 3. Seat status bar chart
   const seatBarData = [
@@ -239,45 +230,55 @@ export function DashboardCharts({ payments, expenses, seatStatusCounts }: Dashbo
           <span className="text-xl font-bold text-gray-900 font-sans">হোস্টেল পরিচালনা ব্যয়</span>
         </div>
         <div className="h-64 flex items-center justify-center">
-          <div className="w-1/2 h-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={finalExpensePieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={4}
-                  dataKey="value"
-                >
-                  {finalExpensePieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value) => [`৳ ${Number(value).toLocaleString()}`, "খরচের পরিমাণ"]}
-                  contentStyle={{ background: "#ffffff", border: "1px solid #e5e7eb", borderRadius: "8px" }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="w-1/2 flex flex-col justify-center gap-1.5 pl-2 font-sans md:font-semibold">
-            {finalExpensePieData.slice(0, 5).map((entry, index) => (
-              <div key={entry.name} className="flex items-center text-xs text-gray-600 gap-1.5">
-                <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                />
-                <span className="truncate max-w-[80px]" title={entry.name}>
-                  {entry.name}
-                </span>
-                <span className="font-semibold ml-auto text-gray-900">
-                  ৳{entry.value > 1000 ? `${(entry.value / 1000).toFixed(1)}k` : entry.value}
-                </span>
+          {finalExpensePieData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center text-center p-4">
+              <span className="text-4xl mb-2">💸</span>
+              <p className="text-sm font-semibold text-gray-500 font-sans">এই মাসে কোনো খরচের এন্ট্রি করা হয়নি</p>
+              <p className="text-xs text-gray-400 mt-1 font-sans">খরচ যুক্ত করলে এখানে খাত অনুসারে হিসেব দেখতে পাবেন</p>
+            </div>
+          ) : (
+            <>
+              <div className="w-1/2 h-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={finalExpensePieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={4}
+                      dataKey="value"
+                    >
+                      {finalExpensePieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value) => [`৳ ${Number(value).toLocaleString()}`, "খরচের পরিমাণ"]}
+                      contentStyle={{ background: "#ffffff", border: "1px solid #e5e7eb", borderRadius: "8px" }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-            ))}
-          </div>
+              <div className="w-1/2 flex flex-col justify-center gap-1.5 pl-2 font-sans md:font-semibold">
+                {finalExpensePieData.slice(0, 5).map((entry, index) => (
+                  <div key={entry.name} className="flex items-center text-xs text-gray-600 gap-1.5">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    />
+                    <span className="truncate max-w-[80px]" title={entry.name}>
+                      {entry.name}
+                    </span>
+                    <span className="font-semibold ml-auto text-gray-900">
+                      ৳{entry.value > 1000 ? `${(entry.value / 1000).toFixed(1)}k` : entry.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
 

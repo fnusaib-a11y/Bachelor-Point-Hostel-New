@@ -223,6 +223,18 @@ export default function App() {
     });
   };
 
+  const [firestorePermissionError, setFirestorePermissionError] = useState<any | null>(null);
+
+  // 1b. Listen for Firestore Permission Errors
+  useEffect(() => {
+    const handlePermErr = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setFirestorePermissionError(customEvent.detail);
+    };
+    window.addEventListener("firestore-permission-error", handlePermErr);
+    return () => window.removeEventListener("firestore-permission-error", handlePermErr);
+  }, []);
+
   // 1. Listen for Authentication Changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -1681,6 +1693,65 @@ export default function App() {
 
         {/* Dynamic Inner views switch boxes */}
         <div className="flex-1 p-6 space-y-6">
+          
+          {/* Firestore Rules Permission Warning */}
+          {firestorePermissionError && (
+            <div className="p-6 bg-red-50 border border-red-200 rounded-2xl space-y-4 shadow-xs animate-in fade-in duration-300 font-sans">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-red-100 rounded-xl text-red-600 shrink-0">
+                  <ShieldAlert className="w-6 h-6" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold text-red-900 font-sans">
+                    Firestore ডাটাবেস অ্যাক্সেস পারমিশন ত্রুটি / Database Permission Error
+                  </h3>
+                  <p className="text-xs text-red-700 leading-relaxed font-sans">
+                    আপনি আপনার কাস্টম ফায়ারবেস প্রজেক্ট (<span className="font-mono bg-red-100 px-1.5 py-0.5 rounded font-bold text-[10px]">bachelorpointhostel-3b9bc</span>) ব্যবহার করছেন। কিন্তু আপনার ফায়ারবেস প্রজেক্টে সুরক্ষার জন্য ডেটা পড়ার বা লেখার অনুমতি বন্ধ রয়েছে। নিচের ধাপগুলো অনুসরণ করে আপনার ফায়ারবেস সিকিউরিটি রুলস আপডেট করুন।
+                  </p>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-xl p-4 border border-red-100 text-xs space-y-3 font-sans">
+                <span className="font-bold text-red-950 block">কিভাবে সমাধান করবেন (Step-by-step Solution):</span>
+                <ol className="list-decimal list-inside space-y-1.5 text-gray-700">
+                  <li>প্রথমে ব্রাউজারে <a href="https://console.firebase.google.com" target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline font-bold">Firebase Console (console.firebase.google.com)</a> ওপেন করুন।</li>
+                  <li>আপনার প্রজেক্ট <span className="font-mono bg-slate-100 px-1 py-0.5 rounded font-bold text-[10px]">bachelorpointhostel-3b9bc</span> নির্বাচন করুন।</li>
+                  <li>বাম পাশের মেনু থেকে <span className="font-bold text-slate-800">Build &gt; Firestore Database</span>-এ যান।</li>
+                  <li>উপরের ট্যাব থেকে <span className="font-bold text-slate-800">Rules</span> ট্যাবটি সিলেক্ট করুন।</li>
+                  <li>সেখানকার কোড মুছে দিয়ে নিচের কোডটুকু কপি করে পেস্ট করুন এবং <span className="font-bold text-emerald-700">Publish</span> বাটনে ক্লিক করুন।</li>
+                </ol>
+                
+                <div className="relative mt-2">
+                  <pre className="bg-slate-900 text-slate-100 font-mono text-[10px] p-4 rounded-lg overflow-x-auto max-h-[160px] leading-relaxed">
+{`rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}`}
+                  </pre>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}`);
+                      showAlert("নিরাপত্তা নিয়মাবলী ক্লিপবোর্ডে কপি করা হয়েছে!", "সফল হয়েছে", "success");
+                    }}
+                    className="absolute top-2 right-2 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded text-[10px] font-bold border border-slate-700 cursor-pointer active:scale-95 transition-all"
+                  >
+                    কপি করুন (Copy Rules)
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* 1. VIEW A: SMART DASHBOARD OVERVIEW */}
           {dashboardTab === "dashboard" && (

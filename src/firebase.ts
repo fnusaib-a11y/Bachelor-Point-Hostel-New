@@ -89,8 +89,9 @@ export interface FirestoreErrorInfo {
 }
 
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errMsg = error instanceof Error ? error.message : String(error);
   const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
+    error: errMsg,
     authInfo: {
       userId: auth.currentUser?.uid,
       email: auth.currentUser?.email,
@@ -106,5 +107,15 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     path
   };
   console.error("Firestore Error: ", JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+  
+  const isPermissionError = errMsg.toLowerCase().includes("permission") || errMsg.toLowerCase().includes("insufficient");
+  
+  if (isPermissionError) {
+    if (typeof window !== "undefined") {
+      const event = new CustomEvent("firestore-permission-error", { detail: errInfo });
+      window.dispatchEvent(event);
+    }
+  } else {
+    throw new Error(JSON.stringify(errInfo));
+  }
 }
