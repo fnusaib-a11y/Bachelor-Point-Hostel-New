@@ -4,14 +4,14 @@ import { initializeFirestore, doc, getDocFromServer, persistentLocalCache, persi
 
 // Your custom production Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCseb7XYsEnWQ1Pbv0SqqSeS8HoRgZxBvQ",
-  authDomain: "deep-wares-464607-r1.firebaseapp.com",
-  databaseURL: "https://deep-wares-464607-r1-default-rtdb.firebaseio.com",
-  projectId: "deep-wares-464607-r1",
-  storageBucket: "deep-wares-464607-r1.firebasestorage.app",
-  messagingSenderId: "712102273506",
-  appId: "1:712102273506:web:9a492a27af2bf26b7e19bb",
-  measurementId: "G-KG7GWYZZ1N"
+  apiKey: "AIzaSyAjvwc8iC-eeEK2N1j6F2WdjMD1U1amflE",
+  authDomain: "bachelorpointhostel-3b9bc.firebaseapp.com",
+  databaseURL: "https://bachelorpointhostel-3b9bc-default-rtdb.firebaseio.com",
+  projectId: "bachelorpointhostel-3b9bc",
+  storageBucket: "bachelorpointhostel-3b9bc.firebasestorage.app",
+  messagingSenderId: "551003853264",
+  appId: "1:551003853264:web:f787f3195940a29f0269d5",
+  measurementId: "G-SML4S4CKK1"
 };
 
 // Initialize Firebase

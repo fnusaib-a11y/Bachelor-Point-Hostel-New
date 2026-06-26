@@ -967,7 +967,7 @@ export default function App() {
   const handlePaymentCollect = async (
     memberId: string,
     amount: number,
-    type: "Rent" | "Food",
+    type: string,
     method: "Cash" | "bKash" | "Nagad" | "Rocket"
   ) => {
     try {
